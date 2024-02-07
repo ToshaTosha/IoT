@@ -53,8 +53,7 @@ void loop() {
     digitalWrite(8, i);
     digitalWrite(9, abs(i-1));
     
-    //выводит все 1(((((((((
-  	/*if(digitalRead(10) == LOW){//btn1 or btn3 
+    if(digitalRead(10) == LOW){//btn1 or btn3 
       buttonStates[i][0] = 1; //нажата
     }else{
       buttonStates[i][0] = 0; //не нажата
@@ -64,7 +63,7 @@ void loop() {
       buttonStates[i][1] = 1; 
     }else{
       buttonStates[i][1] = 0; 
-    }*/
+    }
   }
   
   print_button_states();
