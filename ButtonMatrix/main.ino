@@ -1,5 +1,3 @@
-//unsigned long lastDebounceTime = 0; // последнее время
-//unsigned long debounceDelay = 50; // задержка
 int buttonStates[2][2]={ //состояния кнопок
    {0, 0}, //1 2
    {0, 0}  //3 4
@@ -33,8 +31,6 @@ bool is_any_button_pressed(){
 }
 
 void print_button_states(){
-  //распечатать какие из кнопок нажаты
-  //если ни одна не нажата то ничего не выводить
   if(is_any_button_pressed()){
   	Serial.println("---Buttons states---");
     for(int i = 0; i < 2; i++){
@@ -55,18 +51,14 @@ void loop() {
     
     if(digitalRead(10) == LOW){//btn1 or btn3 
       buttonStates[i][0] = 1; //нажата
-    }else{
-      buttonStates[i][0] = 0; //не нажата
     }
     
   	if(digitalRead(11) == LOW){//btn2 or btn4
       buttonStates[i][1] = 1; 
-    }else{
-      buttonStates[i][1] = 0; 
     }
   }
   
   print_button_states();
   clear_states();
-  delay(100);
+  delay(150);
 }
