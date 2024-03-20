@@ -1,9 +1,11 @@
 from fastapi import FastAPI
-from measurements.router import router as measurements_router
 import uvicorn
+from database import SessionLocal, engine, Base
+from measurements.router import router
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
+app.include_router(router)
 
-app.include_router(measurements_router, prefix="/measurements")
-
-uvicorn.run(app, host="localhost", port=8000)
+if __name__ == '__main__':
+    uvicorn.run(app, host='localhost', port=8005)

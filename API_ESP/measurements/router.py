@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from . import schemas, models
+from fastapi import APIRouter, Depends
+from database import get_db
+from measurements.schemas import AddTemperatureRequest
+import measurements.services as services
 
 router = APIRouter()
 
-@router.post("/temperature")
-def create_temperature_value(temp_value: schemas.TemperatureValue, db: Session = Depends(SessionLocal)):
-    temperature_data = models.Temperature(value=temp_value.value, location=temp_value.location, device_id=temp_value.device_id)
-    db.add(temperature_data)
-    db.commit()
-    return {"message": "Temperature has been stored successfully"}
+@router.post("/temperature", tags=["temperature"])
+async def create_temperature(request: AddTemperatureRequest, db: Session=Depends(get_db)):
+    return services.create_temperature_value(request, db)
 
-@router.get("/temperature/{location}")
-def get_temperature_values(location: str, db: Session = Depends(SessionLocal)):
-    temperatures = db.query(models.Temperature).filter(models.Temperature.location == location).all()
-    return temperatures
+
+@router.get("/temperature", tags=["temperature"])
+async def create_temperature(location: str, db: Session=Depends(get_db)):
+    return services.get_temperature__by_location(location, db)
+

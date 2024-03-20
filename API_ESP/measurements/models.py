@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Float, String, DateTime, Integer
-from database import Base
+import database
 from datetime import datetime
 
-class Temperature(Base):
+class Temperature(database.Base):
     __tablename__ = "temperature"
     id = Column(Integer, primary_key=True, index=True)
     value = Column(Float)

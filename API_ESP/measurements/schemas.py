@@ -6,3 +6,8 @@ class TemperatureValue(BaseModel):
     location: str
     device_id: str
     timestamp: datetime
+
+class AddTemperatureRequest(BaseModel):
+    value: float
+    location: str | None
+    device_id: str
