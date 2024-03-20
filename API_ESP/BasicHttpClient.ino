@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
@@ -57,7 +57,7 @@ void loop() {
       Serial.println(serialized_json);
 
       // configure traged server and url
-      http.begin(client, "http://192.168.32.34:8005/temperature");  // HTTP
+      http.begin(client, "http://192.168.32.34:8005/temperature");
       http.addHeader("Content-Type", "application/json");
 
       Serial.print("[HTTP] POST...\n");
@@ -85,26 +85,26 @@ void loop() {
     
     //GET
     Serial.print("[HTTP] begin...\n");
-    if (http.begin(client, "http://192.168.32.34:8005/temperature/"+LOCATION)) {  // HTTP
+    if (http.begin(client, "http://192.168.32.34:8005/temperature/?location="+LOCATION)) {
 
       Serial.print("[HTTP] GET...\n");
       // start connection and send HTTP header
       int httpCode = http.GET();
 
-      // httpCode will be negative on error
       if (httpCode > 0) {
-        // HTTP header has been send and Server response header has been handled
         Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
-        // file found at server
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
           String payload = http.getString();
           Serial.println(payload);
-          //get json
-          DynamicJsonDocument doc(1024);
+
+          StaticJsonDocument<200> doc;
           deserializeJson(doc, payload);
 
-          ////РАССЧИТАТЬ СРЕДНЕЕ
+          JsonArray values = doc["values"];
+          float avg_value = calculateAverage(values);
+          Serial.print("AVERAGE VALUE: ");
+          Serial.println(avg_value);
         }
       } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -117,4 +117,27 @@ void loop() {
   }
 
   delay(10000);
+}
+
+float calculateAverage(JsonArray values){
+
+  float sum = 0.0;
+  int count = 0;
+
+  for(int i=0; i<values.size(); i++){
+    if(values[i].is<float>()){
+      sum += values[i].as<float>();
+      count++;
+    }
+    else{
+      Serial.println("JSON error: 'values' array contains non-float values");
+    }
+  }
+  if(count>0){
+    return sum/count;
+  }else{
+    Serial.println("JSON error: no valid values found in 'values' or array is empty");
+    return 0.0;
+  }
+
 }
