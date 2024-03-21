@@ -17,8 +17,13 @@ def create_temperature_value(request: AddTemperatureRequest, db: Session):
 
 def get_temperature__by_location(location: str, db: Session):
     try:
-        request = db.query(Temperature).filter(Temperature.location == location).all()
+        temperatures = db.query(Temperature).filter(Temperature.location == location).all()
+        values = [temperature.value for temperature in temperatures]
+        response = {
+            "values": values,
+            "location": location
+        }
     except Exception as e:
         print(e)
-    return request
+    return response
     
