@@ -3,32 +3,26 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
-
 #include <WiFiClient.h>
 
 ESP8266WiFiMulti WiFiMulti;
 
 const char* CLI_SSID = "me";
 const char* CLI_PASS = "123456780";
-
 String LOCATION = "kitchen";
 
 void setup() {
 
   Serial.begin(115200);
-
   Serial.println();
   Serial.println();
   Serial.println();
-
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] WAIT %d...\n", t);
     Serial.flush();
     delay(1000);
   }
-
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(CLI_SSID, CLI_PASS);
 }
@@ -36,7 +30,6 @@ void setup() {
 void loop() {
   // wait for WiFi connection
   if ((WiFiMulti.run() == WL_CONNECTED)) {
-
     WiFiClient client;
     HTTPClient http;
 
@@ -49,7 +42,6 @@ void loop() {
       doc["value"] = value;
       doc["location"] = LOCATION;
       doc["device_id"] = 1;
-      doc["timestamp"] = "2024-03-21 10:10:10";//СДЕЛАТЬ ПОЛУЧЕНИЕ ТЕКУЩЕЙ ДАТЫ
 
       String serialized_json;
       serializeJson(doc, serialized_json);
@@ -79,7 +71,6 @@ void loop() {
       } else {
         Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
-
       http.end();
     }
     
@@ -109,18 +100,15 @@ void loop() {
       } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
-
       http.end();
     } else {
       Serial.println("[HTTP] Unable to connect");
     }
   }
-
   delay(10000);
 }
 
 float calculateAverage(JsonArray values){
-
   float sum = 0.0;
   int count = 0;
 
@@ -139,5 +127,4 @@ float calculateAverage(JsonArray values){
     Serial.println("JSON error: no valid values found in 'values' or array is empty");
     return 0.0;
   }
-
 }
