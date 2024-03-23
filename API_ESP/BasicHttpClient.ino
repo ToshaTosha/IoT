@@ -10,7 +10,8 @@ ESP8266WiFiMulti WiFiMulti;
 
 const char* CLI_SSID = "me";
 const char* CLI_PASS = "123456780";
-String LOCATION = "kitchen";
+String LOCATION = "room";
+String device_id = "esp1234";
 
 void setup() {
 
@@ -41,7 +42,7 @@ void loop() {
       StaticJsonDocument<200> doc;
       doc["value"] = value;
       doc["location"] = LOCATION;
-      doc["device_id"] = 1;
+      doc["device_id"] = device_id;
 
       String serialized_json;
       serializeJson(doc, serialized_json);
@@ -49,7 +50,7 @@ void loop() {
       Serial.println(serialized_json);
 
       // configure traged server and url
-      http.begin(client, "http://192.168.32.34:8005/temperature");
+      http.begin(client, "http://192.168.10.48:8005/temperature");
       http.addHeader("Content-Type", "application/json");
 
       Serial.print("[HTTP] POST...\n");
@@ -76,7 +77,7 @@ void loop() {
     
     //GET
     Serial.print("[HTTP] begin...\n");
-    if (http.begin(client, "http://192.168.32.34:8005/temperature/?location="+LOCATION)) {
+    if (http.begin(client, "http://192.168.10.48:8005/temperature?location="+LOCATION)) {
 
       Serial.print("[HTTP] GET...\n");
       // start connection and send HTTP header
@@ -85,7 +86,7 @@ void loop() {
       if (httpCode > 0) {
         Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+        if (httpCode == HTTP_CODE_OK) {
           String payload = http.getString();
           Serial.println(payload);
 
@@ -93,9 +94,13 @@ void loop() {
           deserializeJson(doc, payload);
 
           JsonArray values = doc["values"];
-          float avg_value = calculateAverage(values);
-          Serial.print("AVERAGE VALUE: ");
-          Serial.println(avg_value);
+          if(values.size()==0){
+            Serial.println("Array is empty! Please enter values");
+          }
+          else{
+            float avg_value = calculateAverage(values);
+            Serial.print("AVERAGE VALUE: ");
+            Serial.println(avg_value);}
         }
       } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -110,21 +115,10 @@ void loop() {
 
 float calculateAverage(JsonArray values){
   float sum = 0.0;
-  int count = 0;
+  int size = values.size();
 
-  for(int i=0; i<values.size(); i++){
-    if(values[i].is<float>()){
+  for(int i=0; i<size; i++){
       sum += values[i].as<float>();
-      count++;
-    }
-    else{
-      Serial.println("JSON error: 'values' array contains non-float values");
-    }
   }
-  if(count>0){
-    return sum/count;
-  }else{
-    Serial.println("JSON error: no valid values found in 'values' or array is empty");
-    return 0.0;
-  }
+  return sum/size;
 }
