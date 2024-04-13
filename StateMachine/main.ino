@@ -16,8 +16,8 @@
 #define L_ECHO 10
 
 int counter = 0;
-int FD = 30;//
-int CD = 15;//
+int FD = 20; // расстояние спереди
+int CD = 15; // расстояние сбоку 
 
 void setup() {
   Serial.begin(9600);
@@ -30,6 +30,7 @@ void setup() {
     pinMode(i, OUTPUT);
   }
   counter = millis();
+  stop();
 }
 
 void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
@@ -73,18 +74,25 @@ float get_distance(int trig, int echo) {
 void loop() {
   float f_dist = get_distance(F_TRIG, F_ECHO);
   float l_dist = get_distance(L_TRIG, L_ECHO);
+
   Serial.print("f_dist:");
   Serial.print(f_dist);
   Serial.print("  l_dist:");
   Serial.println(l_dist);
-  /*if(distance > CD){
 
-  }*/
-  Serial.println(counter - millis());
-  if (millis() - counter < 1250) {
-    rotate_left(255);
-  } else {
-    stop();
+  if(f_dist > FD && l_dist < CD){
+    move_forward(200);
+  } else if(f_dist < FD && l_dist > CD) {
+    rotate_left(200);
+  } else if(f_dist < FD && l_dist < CD) {
+    rotate_right(200);
   }
 
+  //Serial.println(counter - millis());
+  //if (millis() - counter < 1250) {
+  //  rotate_left(255);
+  //} else {
+  //  stop();
+  //}
+  
 }
