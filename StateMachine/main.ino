@@ -7,8 +7,13 @@
 #define DIR_LEFT 7 // HIGH - forward; LOW - back
 #define SPEED_LEFT 6
 
-#define TRIG 9
-#define ECHO 8
+//передний датчик
+#define F_TRIG 9
+#define F_ECHO 8
+
+//левый датчик
+#define L_TRIG 11
+#define L_ECHO 10
 
 int counter = 0;
 int FD = 30;//
@@ -35,9 +40,9 @@ void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
 void move_forward(int velocity){
   move(true, true, velocity, velocity);
 }
-void move_back(int velocity){
+/*void move_back(int velocity){
   move(false, false, velocity, velocity);
-}
+}*/
 
 void rotate_left(int velocity){
   move(false, true, velocity, velocity);
@@ -51,19 +56,22 @@ void stop(){
   move(false, true, 0, 0);
 }
 
-float get_distance() {
-  digitalWrite(TRIG, LOW);
+float get_distance(trig, echo) {
+  digitalWrite(trig, LOW);
   delayMicroseconds(2);
-  digitalWrite(TRIG, HIGH);
+  digitalWrite(trig, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  unsigned long duration = pulseIn(ECHO, HIGH);
+  digitalWrite(trig, LOW);
+
+  unsigned long duration = pulseIn(echo, HIGH);
   float distance_cm = duration * 0.0343 / 2.0;
   return distance_cm;
 }
 
 void loop() {
-  //float distance = get_distance();
+  float f_dist = get_distance(F_TRIG, F_ECHO);
+  float l_dist = get_distance(L_TRIG, L_ECHO);
+  Serial.println("f_dist:"+str(f_dist)+" l_dist:"+str(l_dist));
   /*if(distance > CD){
 
   }*/
