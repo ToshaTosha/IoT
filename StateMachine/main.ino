@@ -22,8 +22,10 @@ int CD = 15;//
 void setup() {
   Serial.begin(9600);
   
-  pinMode(TRIG, OUTPUT);
-  pinMode(ECHO, INPUT);
+  pinMode(F_TRIG, OUTPUT);
+  pinMode(F_ECHO, INPUT);
+  pinMode(L_TRIG, OUTPUT);
+  pinMode(L_ECHO, INPUT);
   for (int i = 4; i <= 7; i++){
     pinMode(i, OUTPUT);
   }
@@ -56,7 +58,7 @@ void stop(){
   move(false, true, 0, 0);
 }
 
-float get_distance(trig, echo) {
+float get_distance(int trig, int echo) {
   digitalWrite(trig, LOW);
   delayMicroseconds(2);
   digitalWrite(trig, HIGH);
@@ -71,7 +73,10 @@ float get_distance(trig, echo) {
 void loop() {
   float f_dist = get_distance(F_TRIG, F_ECHO);
   float l_dist = get_distance(L_TRIG, L_ECHO);
-  Serial.println("f_dist:"+str(f_dist)+" l_dist:"+str(l_dist));
+  Serial.print("f_dist:");
+  Serial.print(f_dist);
+  Serial.print("  l_dist:");
+  Serial.println(l_dist);
   /*if(distance > CD){
 
   }*/
