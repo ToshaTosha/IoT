@@ -15,9 +15,12 @@
 #define L_TRIG 11
 #define L_ECHO 10
 
-int counter = 0;
+int ROTATION_TIME = 500; // время вращения
+int FORWARD_AFTER_ROTATION = 500; // 
+int time = 0; 
+
 int FD = 20; // расстояние спереди
-int CD = 15; // расстояние сбоку 
+int CD = 10; // расстояние сбоку 
 
 void setup() {
   Serial.begin(9600);
@@ -29,7 +32,6 @@ void setup() {
   for (int i = 4; i <= 7; i++){
     pinMode(i, OUTPUT);
   }
-  counter = millis();
   stop();
 }
 
@@ -43,6 +45,7 @@ void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
 void move_forward(int velocity){
   move(true, true, velocity, velocity);
 }
+
 /*void move_back(int velocity){
   move(false, false, velocity, velocity);
 }*/
@@ -53,6 +56,13 @@ void rotate_left(int velocity){
 
 void rotate_right(int velocity){
   move(true, false, velocity, velocity);
+}
+
+void turn_left(int velocity){ //выравнивание к стене
+  move(true, true, velocity/2, velocity);
+}
+void turn_right(int velocity){ //выравнивание от стены
+  move(true, true, velocity, velocity/2);
 }
 
 void stop(){
@@ -75,24 +85,44 @@ void loop() {
   float f_dist = get_distance(F_TRIG, F_ECHO);
   float l_dist = get_distance(L_TRIG, L_ECHO);
 
+  time=millis();
+
   Serial.print("f_dist:");
-  Serial.print(f_dist);
+  Serial.println(f_dist);
   Serial.print("  l_dist:");
   Serial.println(l_dist);
 
   if(f_dist > FD && l_dist < CD){
-    move_forward(200);
-  } else if(f_dist < FD && l_dist > CD) {
-    rotate_left(200);
-  } else if(f_dist < FD && l_dist < CD) {
-    rotate_right(200);
+    move_forward(255);
   }
-
-  //Serial.println(counter - millis());
-  //if (millis() - counter < 1250) {
-  //  rotate_left(255);
-  //} else {
-  //  stop();
-  //}
-  
+  if(l_dist>CD){
+    turn_left(200);
+  } 
+  if(l_dist<CD){
+    turn_right(200);
+  } 
+  if(f_dist < CD && l_dist < FD) { //вращение вправо
+    Serial.println("ROTATE RIGHT");
+    while(millis() - time < ROTATION_TIME){
+       rotate_right(200);
+    }
+    time=millis();
+    while(millis() - time < FORWARD_AFTER_ROTATION){
+      move_forward(100);
+    }
+  }
+  if(f_dist > FD && l_dist > FD) { //вращение влево
+    time=millis();
+    while(millis() - time <  FORWARD_AFTER_ROTATION){
+      move_forward(200);
+    }
+    Serial.println("ROTATE LEFT");
+    while(millis() - time < ROTATION_TIME){
+       rotate_left(255);
+    }
+    time=millis();
+    while(millis() - time <  FORWARD_AFTER_ROTATION){
+      move_forward(200);
+    }
+  }
 }
