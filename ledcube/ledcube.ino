@@ -2,15 +2,13 @@ int rows[] = {2, 3};
 int columns[] = {4, 5, 6, 7};
 
 int size = sizeof(rows) / sizeof(rows[0]);
-int delay_time=700;
+int delay_time=500;
 
 void setup() {
   Serial.begin(9600);
   for (int i=2; i <= 7; i++) {
     pinMode(i, OUTPUT);
   }
-  
-  switch_leds();
 }
 
 void rows_off(){
@@ -43,8 +41,6 @@ void one_led(int state1, int state2){
 }
 
 void two_leds(int state1, int state2){
-  
-  // ДОБАВИТЬ ДИАГОНАЛЬ///
     digitalWrite(rows[0], state1);
     digitalWrite(rows[1], state2);
     for(int j = 0; j < size*2; j++){
@@ -57,6 +53,13 @@ void two_leds(int state1, int state2){
       delay(delay_time);
       digitalWrite(columns[j],HIGH);
       digitalWrite(columns[j2],HIGH);
+    }
+    for(int j = 0; j < size; j++){
+      digitalWrite(columns[j],LOW);
+      digitalWrite(columns[j+2],LOW);
+      delay(delay_time);
+      digitalWrite(columns[j],HIGH);
+      digitalWrite(columns[j+2],HIGH);
     }
     rows_off();
 }
@@ -108,6 +111,5 @@ void switch_leds(){
 }
 
 void loop() {
-  
-  
+  switch_leds();
 }
