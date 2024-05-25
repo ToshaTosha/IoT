@@ -21,7 +21,7 @@ int FORWARD_BEFORE_ROTATION = 400; //
 int FORWARD_AFTER_ROTATION = 700;
 int time = 0; 
 
-int FD = 20; // расстояние спереди
+int FD = 25; // расстояние спереди
 int CD = 10; // расстояние сбоку 
 
 void setup() {
@@ -114,7 +114,7 @@ void loop() {
       move_forward(200);
     }
   }
-  if(f_dist > FD && l_dist > FD) { //вращение влево
+  if(l_dist > FD) { //вращение влево
     time=millis();
     while(millis() - time <  FORWARD_BEFORE_ROTATION){
       move_forward(200);
@@ -122,7 +122,7 @@ void loop() {
     Serial.println("ROTATE LEFT");
     time=millis();
     while(millis() - time < ROTATION_TIME_LEFT){
-       rotate_left(255);
+       rotate_left(200);
     }
     time=millis();
     while(millis() - time <  FORWARD_AFTER_ROTATION){
@@ -130,3 +130,4 @@ void loop() {
     }
   }
  }
+ 
