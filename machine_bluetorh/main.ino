@@ -1,3 +1,11 @@
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(10, 11);
+
+#define DIR_RIGHT 4 
+#define SPEED_RIGHT 5
+#define DIR_LEFT 7 
+#define SPEED_LEFT 6
+
 #define FORWARD 'F'
 #define BACKWARD 'B'
 #define LEFT 'L'
@@ -9,14 +17,100 @@
 #define START 'A'
 #define PAUSE 'P'
 
-void setup() {
-  Serial.begin(9600);
+void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
+  digitalWrite(DIR_RIGHT, rforward);
+  digitalWrite(DIR_LEFT, lforward);
+  analogWrite(SPEED_RIGHT, rvelocity);
+  analogWrite(SPEED_LEFT, lvelocity);
 }
 
+void move_forward(int velocity){
+  move(true, false, velocity, velocity);
+}
+
+void move_back(int velocity){
+  move(false, true, velocity, velocity);
+}
+
+void rotate_left(int velocity){
+  move(false, false, velocity, velocity);
+}
+
+void rotate_right(int velocity){
+  move(true, true, velocity, velocity);
+}
+void stop(){
+  move(false, true, 0, 0);
+}
+
+
+
+// typedef void (*CommandFunction)(int, int);
+
+// CommandFunction move[4] = {
+//   move_forward,     
+//   move_back, 
+//   rotate_left,
+//   rotate_right
+// };
+
+int wheel_speed [] = {205, 205};
+int rotation_speed [] = {500, 500, 500, 500}; //////
+
+int speed_diff = 10;
+int rotation_diff = 100;
+
+
+void setup() {
+  Serial.begin(9600);
+  mySerial.begin(9600);
+
+  for (int i = 4; i <= 7; i++){
+    pinMode(i, OUTPUT);
+  }
+}
+
+
+void calibrate_direction(){
+
+}
+void calibrate_velocity(){
+
+}
+void calibrate_rotation(){
+
+}
+int change_type = 0;
+
 void loop() {
-  if (Serial.available()) {
-    char command = Serial.read();
-    executeCommand(command);
+
+  if (mySerial.available()) {
+    char command = mySerial.read();
+
+    Serial.print("COMMAND: ");
+    Serial.println(command);
+    
+    if(command==START){
+        change_type += 1;
+    }
+
+    switch (change_type){
+        case 1: 
+          calibrate_direction();
+          break;
+        case 2:
+          calibrate_velocity();
+          break;
+        case 3:
+          calibrate_rotation();
+          break;
+        case 4:
+          ///// откалибровался и поехал
+          /// стрелки: двигаться в определённую сторону пока не пришёл 0
+          break;
+        default:
+          break;
+      }
   }
 }
 
@@ -46,14 +140,9 @@ void executeCommand(char command) {
     case SQUARE:
       // Perform action for retrieving and sending status information
       break;
-    case START:
-      // Perform action for starting a process or operation
-      break;
-    case PAUSE:
-      // Perform action for pausing a process or operation
-      break;
     default:
       // Invalid command received
       break;
   }
 }
+
