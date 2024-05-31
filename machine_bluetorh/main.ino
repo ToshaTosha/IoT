@@ -17,6 +17,25 @@ SoftwareSerial mySerial(10, 11);
 #define START 'A'
 #define PAUSE 'P'
 
+
+int states[4][2]{
+  {0,0},
+  {0,1},
+  {1,0},
+  {1,1}
+};
+
+int forward[] = {0,0};
+int back[] = {0,0};
+int left[] = {0,0};
+int right[] = {0,0};
+
+int wheel_speed [] = {205, 205};
+int rotation_speed [] = {500, 500, 500, 500}; //////
+
+int speed_diff = 10;
+int rotation_diff = 100;
+
 void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
   digitalWrite(DIR_RIGHT, rforward);
   digitalWrite(DIR_LEFT, lforward);
@@ -24,41 +43,24 @@ void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
   analogWrite(SPEED_LEFT, lvelocity);
 }
 
-void move_forward(int velocity){
-  move(true, false, velocity, velocity);
+void move_forward(){
+  move(forward[0], forward[1], wheel_speed[0], wheel_speed[1]);
 }
 
-void move_back(int velocity){
-  move(false, true, velocity, velocity);
+void move_back(){
+  move(back[0], back[1], wheel_speed[0], wheel_speed[1]);
 }
 
-void rotate_left(int velocity){
-  move(false, false, velocity, velocity);
+void rotate_left(){
+  move(left[0], left[1], wheel_speed[0], wheel_speed[1]);
 }
 
-void rotate_right(int velocity){
-  move(true, true, velocity, velocity);
+void rotate_right(){
+  move(right[0], right[1], wheel_speed[0], wheel_speed[1]);
 }
 void stop(){
   move(false, true, 0, 0);
 }
-
-
-
-// typedef void (*CommandFunction)(int, int);
-
-// CommandFunction move[4] = {
-//   move_forward,     
-//   move_back, 
-//   rotate_left,
-//   rotate_right
-// };
-
-int wheel_speed [] = {205, 205};
-int rotation_speed [] = {500, 500, 500, 500}; //////
-
-int speed_diff = 10;
-int rotation_diff = 100;
 
 
 void setup() {
@@ -71,40 +73,81 @@ void setup() {
 }
 
 
-void calibrate_direction(){
+char dir_cmd;
+int next = 0; //счетчик нажатия на крест
+
+void calibrate_direction(char cmd){
+
+  if(cmd == FORWARD || cmd == BACKWARD ||
+  cmd == LEFT || cmd == RIGHT){
+    dir_cmd = cmd;
+    move(states[next][0],states[next][1], wheel_speed[0], wheel_speed[1]);
+    delay(1000);
+    stop();
+  }
+  else if(cmd == CROSS){
+    next++;
+    move(states[next][0],states[next][1], wheel_speed[0], wheel_speed[1]);
+    delay(1000);
+    stop();
+            
+  }
+  else if(cmd == TRIANGLE){
+    switch (dir_cmd){
+      case FORWARD:
+        forward[0] = states[next][0];
+        forward[1] = states[next][1];
+        break;
+      case BACKWARD:
+        back[0] = states[next][0];
+        back[1] = states[next][1];
+        break;
+      case LEFT:
+        left[0] = states[next][0];
+        left[1] = states[next][1];
+        break;
+      case RIGHT:
+        right[0] = states[next][0];
+        right[1] = states[next][1];
+        break;
+    }
+    next=0;
+  }
+  else{
+    break;
+  }
+}
+void calibrate_velocity(char cmd){
 
 }
-void calibrate_velocity(){
-
-}
-void calibrate_rotation(){
+void calibrate_rotation(char cmd){
 
 }
 int change_type = 0;
-
 void loop() {
 
   if (mySerial.available()) {
-    char command = mySerial.read();
-
-    Serial.print("COMMAND: ");
-    Serial.println(command);
     
-    if(command==START){
+    char cmd = mySerial.read();
+    Serial.print("COMMAND: ");
+    Serial.println(cmd);
+    
+    if(cmd==START){
         change_type += 1;
     }
 
     switch (change_type){
-        case 1: 
-          calibrate_direction();
+        case 1:
+          calibrate_direction(cmd);
           break;
         case 2:
-          calibrate_velocity();
+          //calibrate_velocity(command);
           break;
         case 3:
-          calibrate_rotation();
+          //calibrate_rotation(command);
           break;
         case 4:
+          Serial.println("calibration completed");
           ///// откалибровался и поехал
           /// стрелки: двигаться в определённую сторону пока не пришёл 0
           break;
@@ -113,36 +156,3 @@ void loop() {
       }
   }
 }
-
-void executeCommand(char command) {
-  switch (command) {
-    case FORWARD:
-      // Perform action for moving forward
-      break;
-    case BACKWARD:
-      // Perform action for moving backward
-      break;
-    case LEFT:
-      // Perform action for turning left
-      break;
-    case RIGHT:
-      // Perform action for turning right
-      break;
-    case CIRCLE:
-      // Perform action for circle
-      break;
-    case CROSS:
-      // Perform action for immediate stop or crossing
-      break;
-    case TRIANGLE:
-      // Perform action for toggling a state (e.g., LED on/off)
-      break;
-    case SQUARE:
-      // Perform action for retrieving and sending status information
-      break;
-    default:
-      // Invalid command received
-      break;
-  }
-}
-
