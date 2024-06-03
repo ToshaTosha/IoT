@@ -31,7 +31,7 @@ int left[] = {0,0};
 int right[] = {0,0};
 
 int wheel_speed [] = {205, 205};
-int rotation_speed [] = {500, 500, 500, 500};
+int rotation_time [] = {250, 500, 750, 1000}; // рандомные значения для 90 180 270 360 градусов 
 
 int speed_diff = 10;
 int rotation_diff = 50;
@@ -153,14 +153,96 @@ void calibrate_velocity(char cmd){
     delay(200);
     stop();
   }
+  else{
+  }
 }
 
+int count = 0;
+int num = -1;
+void rotate(){
+  rotate_right();
+  delay(rotation_time[num]);
+  stop();
+}
 void calibrate_rotation(char cmd){
-
+  if(cmd == LEFT){ // +
+    if(count == 1){
+      rotation_time[num] += rotation_diff;
+    }
+  }
+  if(cmd == RIGHT){ // -
+    if(count == 1){
+      if(rotation_time[num] - rotation_diff < 0){
+        rotation_time[num] = 0;
+      }
+      else{
+        rotation_time[num] -= rotation_diff;
+      }
+    }
+  }
+  if(cmd == SQUARE){ //90
+    num = 0;
+    count++;
+    if(count == 2){
+      rotate();
+      count = 0;
+    }
+    
+  }
+  else if(cmd == TRIANGLE){ // 180
+    num = 1;
+    count++;
+    if(count == 2){
+      rotate();
+      count = 0;
+    }
+  }
+  else if(cmd == CIRCLE){ // 270
+    num = 2;
+    count++;
+    if(count == 2){
+      rotate();
+      count = 0;
+    }
+  }
+  else if(cmd == CROSS){ // 360
+    num = 3;
+    count++;
+    if(count == 2){
+      rotate();
+      count = 0;
+    }
+  }
+  else{
+  }
 }
+
 
 
 int change_type = 0;
+int pause_count = 0;
+char prev_cmd;
+
+void choose_rot(){
+          if(prev_cmd == SQUARE){
+            delay(rotation_time[0]);
+            stop();
+          }
+          if(prev_cmd == TRIANGLE){
+            delay(rotation_time[1]);
+            stop();
+          }
+          if(prev_cmd == CIRCLE){
+            delay(rotation_time[2]);
+            stop();
+          }
+          if(prev_cmd == CROSS){
+            delay(rotation_time[3]);
+            stop();
+          }
+          else{}
+}
+
 void loop() {
 
   if (mySerial.available()) {
@@ -170,7 +252,39 @@ void loop() {
     Serial.println(cmd);
     
     if(cmd==START){
-        change_type += 1;
+      change_type++;
+    }
+    if(cmd==PAUSE){
+      pause_count++;
+    }
+    if(pause_count == 1){ //просмотр калибровки
+        prev_cmd = cmd;
+        if(cmd==FORWARD){
+          move_forward();
+        }
+        if(cmd==BACKWARD){
+          move_back();
+        }
+        if(cmd==LEFT){
+          rotate_left();
+          choose_rot();
+        }
+        if(cmd==RIGHT){
+          rotate_right();
+          choose_rot();
+        }
+
+        if(cmd == SQUARE || cmd == TRIANGLE || cmd == CIRCLE || cmd == CROSS){
+          stop();
+        }
+    }
+    if(pause_count == 2){ // возвращение к калибровке
+      pause_count = 0;
+      stop();
+    }
+    if(pause_count == 2 and change_type == 4){ // откалибровать заново
+      change_type = 0;
+      stop();
     }
 
     switch (change_type){
@@ -181,22 +295,7 @@ void loop() {
           calibrate_velocity(cmd);
           break;
         case 3:
-          //calibrate_rotation(cmd);
-          break;
-        case 4:
-          Serial.println("calibration completed");
-          if(cmd==FORWARD){
-            move_forward();
-          }
-          if(cmd==BACKWARD){
-            move_back();
-          }
-          if(cmd==LEFT){
-            rotate_left();
-          }
-          if(cmd==RIGHT){
-            rotate_right();
-          }
+          calibrate_rotation(cmd);
           break;
         default:
           break;
