@@ -222,23 +222,19 @@ void calibrate_rotation(char cmd){
 int change_type = 0;
 int pause_count = 0;
 char prev_cmd;
-
+int delay_time;
 void choose_rot(){
           if(prev_cmd == SQUARE){
-            delay(rotation_time[0]);
-            stop();
+            delay_time = rotation_time[0];
           }
           if(prev_cmd == TRIANGLE){
-            delay(rotation_time[1]);
-            stop();
+            delay_time = rotation_time[1];
           }
           if(prev_cmd == CIRCLE){
-            delay(rotation_time[2]);
-            stop();
+            delay_time = rotation_time[2];
           }
           if(prev_cmd == CROSS){
-            delay(rotation_time[3]);
-            stop();
+            delay_time = rotation_time[3];
           }
           else{}
 }
@@ -258,7 +254,7 @@ void loop() {
       pause_count++;
     }
     if(pause_count == 1){ //просмотр калибровки
-        prev_cmd = cmd;
+        
         if(cmd==FORWARD){
           move_forward();
         }
@@ -267,38 +263,49 @@ void loop() {
         }
         if(cmd==LEFT){
           rotate_left();
-          choose_rot();
+          if((prev_cmd==SQUARE || prev_cmd == TRIANGLE || prev_cmd == CIRCLE || prev_cmd == CROSS)){
+            Serial.println(prev_cmd);
+            choose_rot();
+            delay(delay_time);
+            stop();
+          } 
         }
-        if(cmd==RIGHT){
+        else if(cmd==RIGHT){
           rotate_right();
-          choose_rot();
+          if((prev_cmd==SQUARE || prev_cmd == TRIANGLE || prev_cmd == CIRCLE || prev_cmd == CROSS)){
+            Serial.println(prev_cmd);
+            choose_rot();
+            delay(delay_time);
+            stop();
+          }
         }
 
         if(cmd == SQUARE || cmd == TRIANGLE || cmd == CIRCLE || cmd == CROSS){
+          prev_cmd = cmd;
           stop();
         }
     }
-    if(pause_count == 2){ // возвращение к калибровке
+    else if(pause_count == 2){ // возвращение к калибровке
       pause_count = 0;
       stop();
-    }
-    if(pause_count == 2 and change_type == 4){ // откалибровать заново
-      change_type = 0;
-      stop();
-    }
-
-    switch (change_type){
-        case 1:
-          calibrate_direction(cmd);
-          break;
-        case 2:
-          calibrate_velocity(cmd);
-          break;
-        case 3:
-          calibrate_rotation(cmd);
-          break;
-        default:
-          break;
+      if(change_type == 4){ // откалибровать заново
+        change_type = 0;
+        stop();
       }
+    }else{
+      switch (change_type){
+          case 1:
+            calibrate_direction(cmd);
+            break;
+          case 2:
+            calibrate_velocity(cmd);
+            break;
+          case 3:
+            calibrate_rotation(cmd);
+            break;
+          default:
+            break;
+        }
+    }
   }
 }
