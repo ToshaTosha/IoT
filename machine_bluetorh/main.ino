@@ -31,10 +31,10 @@ int left[] = {0,0};
 int right[] = {0,0};
 
 int wheel_speed [] = {205, 205};
-int rotation_speed [] = {500, 500, 500, 500}; //////
+int rotation_speed [] = {500, 500, 500, 500};
 
 int speed_diff = 10;
-int rotation_diff = 100;
+int rotation_diff = 50;
 
 void move(bool lforward, bool rforward, int lvelocity, int rvelocity){
   digitalWrite(DIR_RIGHT, rforward);
@@ -87,10 +87,12 @@ void calibrate_direction(char cmd){
   }
   else if(cmd == CROSS){
     next++;
+    if(next>=4){
+      next=0;
+    }
     move(states[next][0],states[next][1], wheel_speed[0], wheel_speed[1]);
     delay(1000);
     stop();
-            
   }
   else if(cmd == TRIANGLE){
     switch (dir_cmd){
@@ -114,15 +116,50 @@ void calibrate_direction(char cmd){
     next=0;
   }
   else{
-    break;
   }
 }
-void calibrate_velocity(char cmd){
 
+int wheel = 0;
+void calibrate_velocity(char cmd){
+  if(cmd == LEFT){
+    wheel = 0;
+    move_forward();
+    delay(1000);
+    stop();
+  }
+  else if(cmd == RIGHT){
+    wheel = 1;
+    move_forward();
+    delay(1000);
+    stop();
+  }
+  else if(cmd == SQUARE){
+    if(wheel_speed[wheel] + speed_diff > 255){
+      wheel_speed[wheel] = 255;
+    }else{
+      wheel_speed[wheel] += speed_diff;
+    }
+    move_forward();
+    delay(200);
+    stop();
+  }
+  else if(cmd == CIRCLE){
+    if(wheel_speed[wheel] - speed_diff < 0){
+      wheel_speed[wheel] = 0;
+    }else{
+      wheel_speed[wheel] -= speed_diff;
+    }
+    move_forward();
+    delay(200);
+    stop();
+  }
 }
+
 void calibrate_rotation(char cmd){
 
 }
+
+
 int change_type = 0;
 void loop() {
 
@@ -141,15 +178,25 @@ void loop() {
           calibrate_direction(cmd);
           break;
         case 2:
-          //calibrate_velocity(command);
+          calibrate_velocity(cmd);
           break;
         case 3:
-          //calibrate_rotation(command);
+          //calibrate_rotation(cmd);
           break;
         case 4:
           Serial.println("calibration completed");
-          ///// откалибровался и поехал
-          /// стрелки: двигаться в определённую сторону пока не пришёл 0
+          if(cmd==FORWARD){
+            move_forward();
+          }
+          if(cmd==BACKWARD){
+            move_back();
+          }
+          if(cmd==LEFT){
+            rotate_left();
+          }
+          if(cmd==RIGHT){
+            rotate_right();
+          }
           break;
         default:
           break;
