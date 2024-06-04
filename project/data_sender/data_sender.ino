@@ -15,8 +15,7 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
-//SDS011 sds;
-SoftwareSerial sds(0, 2); // RX, TX
+SoftwareSerial sds(0, 2);
 Adafruit_BME280 bme; 
 
 const char* CLI_SSID = "me";
@@ -73,21 +72,14 @@ void loop() {
     Serial.print("serialized json: ");
     Serial.println(serialized_json);
 
-    http.begin(client, "http://192.168.10.48:8005/items");
+    http.begin(client, "http://192.168.250.48:8005/items");
     http.addHeader("Content-Type", "application/json");
 
     Serial.print("[HTTP] POST...\n");
     int httpCode = http.POST(serialized_json);
 
-    if (httpCode > 0) {s
+    if (httpCode > 0) {
       Serial.printf("[HTTP] POST... code: %d\n", httpCode);
-
-      if (httpCode == HTTP_CODE_OK) {
-        const String& payload = http.getString();
-        Serial.println("received payload:\n<<");
-        Serial.println(payload);
-        Serial.println(">>");
-      }
     } else {
       Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
@@ -97,21 +89,23 @@ void loop() {
 }
 
 void read_sds011(){
-  
+  while (sds.available() && sds.read() != 0xAA) { }
   if (sds.available()) {
     byte buffer[10];
-    sds.readBytes(buffer, 10);
-
-    pm25 = (buffer[3] * 256 + buffer[2]);
-    pm10 = (buffer[5] * 256 + buffer[4]);
-    
-    Serial.print("PM2.5: ");
-    Serial.print(pm25);
-    Serial.print(" PM10: ");
-    Serial.println(pm10);
-  }
-  else{
-    Serial.println("sds not available");
+    buffer[0] = 0xAA;
+    if (sds.available() >= 9) {
+      sds.readBytes(&buffer[1], 9);
+      if (buffer[9] == 0xAB) {
+        pm25 = (buffer[3] << 8) | buffer[2];
+        pm10 = (buffer[5] << 8) | buffer[4];
+        Serial.print("PM2.5: ");
+        Serial.print(pm25);
+        Serial.print(" PM10: ");
+        Serial.println(pm10);
+      } else {
+        Serial.println("Invalid ending byte from SDS011.");
+      }
+    }
   }
 }
 void read_bme280() {
@@ -135,6 +129,4 @@ void read_bme280() {
     Serial.print(humidity);
     Serial.println(" %");
 
-    Serial.println();
-}
-
+    
