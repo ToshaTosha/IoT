@@ -2,7 +2,6 @@
 name = "server"
 version = "0.1.0"
 description = ""
-authors = ["Ekaterina <108530800+piccolo-gatto@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
