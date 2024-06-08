@@ -37,17 +37,23 @@ def update_data():
     return df
 
 # Создание графиков с использованием Dash
+# Создание графиков с использованием Dash
 app.layout = html.Div([
     dcc.Interval(
         id='interval-component',
         interval=10*1000,  # в миллисекундах
         n_intervals=0
     ),
-    dcc.Graph(id='temperature-graph'),
-    dcc.Graph(id='pressure-graph'),
-    dcc.Graph(id='pm10-graph'),
-    dcc.Graph(id='pm25-graph')
+    html.Div([
+        dcc.Graph(id='temperature-graph', style={'width': '50%', 'display': 'inline-block'}),
+        dcc.Graph(id='pressure-graph', style={'width': '50%', 'display': 'inline-block'})
+    ]),
+    html.Div([
+        dcc.Graph(id='pm10-graph', style={'width': '50%', 'display': 'inline-block'}),
+        dcc.Graph(id='pm25-graph', style={'width': '50%', 'display': 'inline-block'})
+    ])
 ])
+
 
 # Обновление данных и графиков
 @app.callback(
