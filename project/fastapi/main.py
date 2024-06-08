@@ -10,7 +10,7 @@ from datetime import datetime
 app = FastAPI()
 
 # Подключение к базе данных
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./project/test.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -20,13 +20,14 @@ Base = declarative_base()
 class Item(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)
-    pm10 = Column(Integer, index=True)
-    pm25 = Column(Integer, index=True)
-    temperature = Column(Float, index=True)
-    pressure = Column(Float, index=True)
-    altitude = Column(Float, index=True)
-    humidity = Column(Float, index=True)
-    timestamp = Column(DateTime, default=datetime.now)
+    pm10 = Column(Integer)
+    pm25 = Column(Integer)
+    temperature = Column(Float)
+    pressure = Column(Float)
+    altitude = Column(Float)
+    humidity = Column(Float)
+    timestamp = Column(DateTime)
+    # timestamp = Column(DateTime, index=True)
 
 # Создание таблицы в базе данных
 Base.metadata.create_all(bind=engine)
@@ -52,11 +53,12 @@ async def create_item(item: ItemIn):
         temperature=item.temperature,
         pressure=item.pressure,
         altitude=item.altitude,
-        humidity=item.humidity)
+        humidity=item.humidity,
+        timestamp=item.timestamp)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
     return db_item
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
