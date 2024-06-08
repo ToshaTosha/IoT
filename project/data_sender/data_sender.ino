@@ -6,20 +6,17 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
+#include <ESPDateTime.h>
+
+#include "Config.h"
+#include "Wifi.h"
+#include "Server.h"
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-ESP8266WiFiMulti WiFiMulti;
-
 SoftwareSerial sds(0, 2);
 Adafruit_BME280 bme; 
-
-const char* CLI_SSID = "me";
-const char* CLI_PASS = "123456780";
 
 int pm10, pm25; //sds011
 
@@ -36,22 +33,26 @@ void setup() {
       Serial.flush();
       delay(1000);
     }
-    WiFi.mode(WIFI_STA);
-    WiFiMulti.addAP(CLI_SSID, CLI_PASS);
-
+    bool is_ap_on = start_AP_mode();
+    if(is_ap_on) {
+      server_init();
+    }
+  
     if (!bme.begin(0x76)) {
       Serial.println("Could not find a valid BME280 sensor, check wiring!");
       while (1);
     }
-    delayTime = 10000;
+    delayTime = 1000;
+    DateTime.setServer("time.pool.aliyun.com");
+    DateTime.setTimeZone("<+08>-8");
+    DateTime.begin();
 
     Serial.println();
 }
 
 void loop() { 
-    // wait for WiFi connection
-  if ((WiFiMulti.run() == WL_CONNECTED)) {
-    WiFiClient client;
+    server.handleClient();
+    //WiFiClient client;
     HTTPClient http;
 
     read_sds011();
@@ -66,13 +67,14 @@ void loop() {
     doc["pressure"] = pressure;
     doc["altitude"] = altitude;
     doc["humidity"] = humidity;
+    doc["timestamp"] = DateTime.now();
 
     String serialized_json;
     serializeJson(doc, serialized_json);
     Serial.print("serialized json: ");
     Serial.println(serialized_json);
 
-    http.begin(client, "http://192.168.250.48:8005/items");
+    http.begin(wifiClient, "http://" + IP_ADDR +":8000/items");
     http.addHeader("Content-Type", "application/json");
 
     Serial.print("[HTTP] POST...\n");
@@ -84,9 +86,13 @@ void loop() {
       Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
-  }
-  delay(delayTime);
+  
+  
+  delay(10000);
+  
 }
+
+
 
 void read_sds011(){
   while (sds.available() && sds.read() != 0xAA) { }
@@ -128,5 +134,5 @@ void read_bme280() {
     Serial.print("Humidity = ");
     Serial.print(humidity);
     Serial.println(" %");
-
+}
     
