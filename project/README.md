@@ -18,3 +18,5 @@
 
 ## Демонстрация
 https://youtu.be/vAsdiZ3ZUGg?si=TenfS_Z53ZVRjWG0
+## Презентация
+https://docs.google.com/presentation/d/1KcsJreGEMdjFGqShqCnYfHm0llJClQ1C/edit?usp=sharing&ouid=114830679962963270447&rtpof=true&sd=true
